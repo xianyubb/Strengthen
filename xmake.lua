@@ -6,7 +6,7 @@ add_requires("levilamina") -- You can also use a specific version with postfix x
 
 set_runtimes("MD")
 
-target("rename-this") -- Change this to your plugin name.
+target("Strengthen") -- Change this to your plugin name.
     add_cxflags(
         "/EHa", -- To catch both structured (asynchronous) and standard C++ (synchronous) exceptions.
         "/utf-8" -- To enable UTF-8 source code.
