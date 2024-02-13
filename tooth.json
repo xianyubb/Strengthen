@@ -1,0 +1,24 @@
+{
+  "format_version": 2,
+  "tooth": "github.com/xianyubb/Strengthen",
+  "version": "0.1.0",
+  "info": {
+    "name": "Strengthen",
+    "description": "Custom Monster",
+    "source": "github.com/xianyubb/Strengthen",
+    "author": "xianyubb",
+    "tags": ["plugin", "ll"]
+  },
+  "dependencies": {},
+  "prerequisites": {
+    "github.com/LiteLDev/LeviLamina": "0.7.2"
+  },
+  "files": {
+    "place": [
+      {
+        "src": "Strengthen/*",
+        "dest": "plugins/Strengthen"
+      }
+    ]
+  }
+}
