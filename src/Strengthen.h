@@ -6,6 +6,8 @@
 #include <ll/api/plugin/NativePlugin.h>
 
 
+Config mConfig;
+
 namespace Strengthen {
 
 class Strengthen {
@@ -33,7 +35,8 @@ public:
 private:
     ll::plugin::NativePlugin* mSelf{};
     ll::event::ListenerPtr    mMobSpawned;
-    Config                    mConfig;
+   
 };
 
 } // namespace Strengthen
+

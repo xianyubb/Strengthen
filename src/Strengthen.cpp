@@ -1,98 +1,86 @@
 #include "Strengthen.h"
 
 #include "ll/api/Config.h"
+#include "ll/api/Logger.h"
 #include "ll/api/event/EventBus.h"
-#include "ll/api/event/ListenerBase.h"
 #include "ll/api/event/world/SpawnMobEvent.h"
+#include "ll/api/utils/HashUtils.h"
+#include "mc/common/wrapper/optional_ref.h"
+#include "mc/world/actor/Mob.h"
 #include "mc/world/attribute/AttributeInstance.h"
 #include "mc/world/attribute/SharedAttributes.h"
 
 #include <ll/api/plugin/NativePlugin.h>
 #include <memory>
+#include <stdexcept>
 
+ll::Logger logger;
 
-void setHealth(optional_ref<Mob> &Mob, MonsterList MobType, Config& config) {
-    auto mob = getMob(MobType, config);
-    Mob->getMutableAttribute(SharedAttributes::HEALTH)->setMaxValue(mob.health);
-    Mob->getMutableAttribute(SharedAttributes::HEALTH)->setCurrentValue(mob.health);
+void setAttribute(optional_ref<Mob>& Mob, MonsterList MobType) {
+    // logger.info(Mob->getTypeName());
+    auto mob = getMob(MobType, mConfig);
+    try {
+
+        if (bool(mob.attack)) {
+            Mob->getMutableAttribute(SharedAttributes::ATTACK_DAMAGE)->setMaxValue(mob.attack);
+            Mob->getMutableAttribute(SharedAttributes::ATTACK_DAMAGE)->setCurrentValue(mob.attack);
+        }
+        if (bool(mob.health)) {
+            Mob->getMutableAttribute(SharedAttributes::HEALTH)->setMaxValue(mob.health);
+            Mob->getMutableAttribute(SharedAttributes::HEALTH)->setCurrentValue(mob.health);
+        }
+        if (bool(mob.speed.speed)) {
+            Mob->getMutableAttribute(SharedAttributes::MOVEMENT_SPEED)->setMaxValue(mob.speed.speed);
+            Mob->getMutableAttribute(SharedAttributes::MOVEMENT_SPEED)->setCurrentValue(mob.speed.speed);
+        }
+        if (bool(mob.speed.lava_speed)) {
+            Mob->getMutableAttribute(SharedAttributes::LAVA_MOVEMENT_SPEED)->setMaxValue(mob.speed.lava_speed);
+            Mob->getMutableAttribute(SharedAttributes::LAVA_MOVEMENT_SPEED)->setCurrentValue(mob.speed.lava_speed);
+        }
+        if (bool(mob.speed.water_speed)) {
+            Mob->getMutableAttribute(SharedAttributes::UNDERWATER_MOVEMENT_SPEED)->setMaxValue(mob.speed.water_speed);
+            Mob->getMutableAttribute(SharedAttributes::UNDERWATER_MOVEMENT_SPEED)
+                ->setCurrentValue(mob.speed.water_speed);
+        }
+        if (bool(mob.jump_strength)) {
+            Mob->getMutableAttribute(SharedAttributes::JUMP_STRENGTH)->setMaxValue(mob.jump_strength);
+            Mob->getMutableAttribute(SharedAttributes::JUMP_STRENGTH)->setCurrentValue(mob.jump_strength);
+        }
+        if (bool(mob.knockback_resistance)) {
+            Mob->getMutableAttribute(SharedAttributes::KNOCKBACK_RESISTANCE)->setMaxValue(mob.knockback_resistance);
+            Mob->getMutableAttribute(SharedAttributes::KNOCKBACK_RESISTANCE)->setCurrentValue(mob.knockback_resistance);
+        }
+        if (bool(mob.follow_range)) {
+            Mob->getMutableAttribute(SharedAttributes::FOLLOW_RANGE)->setMaxValue(mob.follow_range);
+            Mob->getMutableAttribute(SharedAttributes::FOLLOW_RANGE)->setCurrentValue(mob.follow_range);
+        }
+    } catch (std::runtime_error& err) {
+
+        // logger.info(err.what());
+    }
 }
 
-void setAttack(optional_ref<Mob> &Mob, MonsterList MobType, Config& config) {
-    auto mob = getMob(MobType, config);
-    Mob->getMutableAttribute(SharedAttributes::ATTACK_DAMAGE)->setMaxValue(mob.attack);
-    Mob->getMutableAttribute(SharedAttributes::ATTACK_DAMAGE)->setCurrentValue(mob.attack);
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     SpawnedMobEventHook,
+//     HookPriority::Normal,
+//     Spawner,
+//     &Spawner::spawnMob,
+//     Mob*,
+//     BlockSource&                     blockSource,
+//     ActorDefinitionIdentifier const& id,
+//     Actor*                           spawner,
+//     Vec3 const&                      pos,
+//     bool                             naturalSpawn,
+//     bool                             surface,
+//     bool                             fromSpawner
+// ) {
+//     auto res = origin(blockSource, id, spawner, pos, naturalSpawn, surface, fromSpawner);
+//
+//
+//     return res;
+// }
 
-void setSpeed(optional_ref<Mob> &Mob, MonsterList MobType, Config& config, const std::string& speedType) {
-    if (speedType == "speed") {
-        auto mob = getMob(MobType, config);
-        Mob->getMutableAttribute(SharedAttributes::MOVEMENT_SPEED)->setMaxValue(mob.speed.speed);
-        Mob->getMutableAttribute(SharedAttributes::MOVEMENT_SPEED)->setCurrentValue(mob.speed.speed);
-    } else if (speedType == "water_speed") {
-        auto mob = getMob(MobType, config);
-        Mob->getMutableAttribute(SharedAttributes::UNDERWATER_MOVEMENT_SPEED)->setMaxValue(mob.speed.water_speed);
-        Mob->getMutableAttribute(SharedAttributes::UNDERWATER_MOVEMENT_SPEED)->setCurrentValue(mob.speed.water_speed);
-    } else if (speedType == "lava_speed") {
-        auto mob = getMob(MobType, config);
-        Mob->getMutableAttribute(SharedAttributes::LAVA_MOVEMENT_SPEED)->setMaxValue(mob.speed.lava_speed);
-        Mob->getMutableAttribute(SharedAttributes::LAVA_MOVEMENT_SPEED)->setCurrentValue(mob.speed.lava_speed);
-    }
-}
 
-void setFllowRange(optional_ref<Mob> &Mob, MonsterList MobType, Config& config) {
-    auto mob = getMob(MobType, config);
-    Mob->getMutableAttribute(SharedAttributes::FOLLOW_RANGE)->setMaxValue(mob.follow_range);
-    Mob->getMutableAttribute(SharedAttributes::FOLLOW_RANGE)->setCurrentValue(mob.follow_range);
-}
-
-void setJumpStrength(optional_ref<Mob> &Mob, MonsterList MobType, Config& config) {
-    auto mob = getMob(MobType, config);
-    Mob->getMutableAttribute(SharedAttributes::JUMP_STRENGTH)->setMaxValue(mob.jump_strength);
-    Mob->getMutableAttribute(SharedAttributes::JUMP_STRENGTH)->setCurrentValue(mob.jump_strength);
-}
-
-void setKnockbackResistance(optional_ref<Mob> &Mob, MonsterList MobType, Config& config) {
-    auto mob = getMob(MobType, config);
-    Mob->getMutableAttribute(SharedAttributes::KNOCKBACK_RESISTANCE)->setMaxValue(mob.knockback_resistance);
-    Mob->getMutableAttribute(SharedAttributes::KNOCKBACK_RESISTANCE)->setCurrentValue(mob.knockback_resistance);
-}
-
-void setLuck(optional_ref<Mob> &Mob, MonsterList MobType, Config& config) {
-    auto mob = getMob(MobType, config);
-    Mob->getMutableAttribute(SharedAttributes::LUCK)->setMaxValue(mob.luck);
-    Mob->getMutableAttribute(SharedAttributes::LUCK)->setCurrentValue(mob.luck);
-}
-
-void setAttribute(optional_ref<Mob> &Mob, Config& config, MonsterList MobType) {
-    auto mob = getMob(MobType, config);
-    if (bool(mob.attack)) {
-        setHealth(Mob, MobType, config);
-    }
-    if (bool(mob.health)) {
-        setAttack(Mob, MobType, config);
-    }
-    if (bool(mob.speed.speed)) {
-        setSpeed(Mob, MobType, config, "speed");
-    }
-    if (bool(mob.jump_strength)) {
-        setJumpStrength(Mob, MobType, config);
-    }
-    if (bool(mob.knockback_resistance)) {
-        setKnockbackResistance(Mob, MobType, config);
-    }
-    if (bool(mob.luck)) {
-        setLuck(Mob, MobType, config);
-    }
-    if (bool(mob.follow_range)) {
-        setFllowRange(Mob, MobType, config);
-    }
-    if (bool(mob.speed.lava_speed)) {
-        setSpeed(Mob, MobType, config, "lava_speed");
-    }
-    if (bool(mob.speed.water_speed)) {
-        setSpeed(Mob, MobType, config, "water_speed");
-    }
-}
 namespace Strengthen {
 
 Strengthen::Strengthen() = default;
@@ -128,99 +116,164 @@ bool Strengthen::load(ll::plugin::NativePlugin& self) {
 
 bool Strengthen::enable() {
     getSelf().getLogger().info("enabling...");
+    auto& evnetBus = ll::event::EventBus::getInstance();
 
-    auto& logger = getSelf().getLogger();
-
-    auto& EventBus = ll::event::EventBus::getInstance();
-
-    mMobSpawned = EventBus.emplaceListener<ll::event::SpawnedMobEvent>([this](ll::event::SpawnedMobEvent& event) {
-        if (!event.mob().has_value()) return true;
-        auto Mob      = event.mob();
-        auto TypeName = Mob->getTypeName();
-        if (TypeName == "minecraft:blaze") {
-            setAttribute(Mob, this->mConfig, MonsterList::blaze);
-        } else if (TypeName == "minecraft:creeper") {
-            setAttribute(Mob, this->mConfig, MonsterList::creeper);
-        } else if (TypeName == "minecraft:drowned") {
-            setAttribute(Mob, this->mConfig, MonsterList::drowned);
-        } else if (TypeName == "minecraft:enderman") {
-            setAttribute(Mob, this->mConfig, MonsterList::enderman);
-        } else if (TypeName == "minecraft:evoker") {
-            setAttribute(Mob, this->mConfig, MonsterList::evoker);
-        } else if (TypeName == "minecraft:ghast") {
-            setAttribute(Mob, this->mConfig, MonsterList::ghast);
-        } else if (TypeName == "minecraft:guardian") {
-            setAttribute(Mob, this->mConfig, MonsterList::guardian);
-        } else if (TypeName == "minecraft:elder_guardian") {
-            setAttribute(Mob, this->mConfig, MonsterList::elder_guardian);
-        } else if (TypeName == "minecraft:husk") {
-            setAttribute(Mob, this->mConfig, MonsterList::husk);
-        } else if (TypeName == "minecraft:magma_cube") {
-            setAttribute(Mob, this->mConfig, MonsterList::magma_cube);
-        } else if (TypeName == "minecraft:endermite") {
-            setAttribute(Mob, this->mConfig, MonsterList::endermite);
-        } else if (TypeName == "minecraft:hoglin") {
-            setAttribute(Mob, this->mConfig, MonsterList::hoglin);
-        } else if (TypeName == "minecraft:phantom") {
-            setAttribute(Mob, this->mConfig, MonsterList::phantom);
-        } else if (TypeName == "minecraft:piglin_brute") {
-            setAttribute(Mob, this->mConfig, MonsterList::piglin_brute);
-        } else if (TypeName == "minecraft:pillager") {
-            setAttribute(Mob, this->mConfig, MonsterList::pillager);
-        } else if (TypeName == "minecraft:ravager") {
-            setAttribute(Mob, this->mConfig, MonsterList::ravager);
-        } else if (TypeName == "minecraft:shulker") {
-            setAttribute(Mob, this->mConfig, MonsterList::shulker);
-        } else if (TypeName == "minecraft:silverfish") {
-            setAttribute(Mob, this->mConfig, MonsterList::silverfish);
-        } else if (TypeName == "minecraft:skeleton") {
-            setAttribute(Mob, this->mConfig, MonsterList::skeleton);
-        } else if (TypeName == "minecraft:vex") {
-            setAttribute(Mob, this->mConfig, MonsterList::vex);
-        } else if (TypeName == "minecraft:vindicator") {
-            setAttribute(Mob, this->mConfig, MonsterList::vindicator);
-        } else if (TypeName == "minecraft:warden") {
-            setAttribute(Mob, this->mConfig, MonsterList::warden);
-        } else if (TypeName == "minecraft:witch") {
-            setAttribute(Mob, this->mConfig, MonsterList::witch);
-        } else if (TypeName == "minecraft:wither_skeleton") {
-            setAttribute(Mob, this->mConfig, MonsterList::wither_skeleton);
-        } else if (TypeName == "minecraft:zoglin") {
-            setAttribute(Mob, this->mConfig, MonsterList::zoglin);
-        } else if (TypeName == "minecraft:zombie") {
-            setAttribute(Mob, this->mConfig, MonsterList::zombie);
-        } else if (TypeName == "minecraft:zombie_villager_v2") {
-            setAttribute(Mob, this->mConfig, MonsterList::zombie_villager_v2);
-        } else if (TypeName == "minecraft:piglin") {
-            setAttribute(Mob, this->mConfig, MonsterList::piglin);
-        } else if (TypeName == "minecraft:slime") {
-            setAttribute(Mob, this->mConfig, MonsterList::slime);
-        } else if (TypeName == "minecraft:cave_spider") {
-            setAttribute(Mob, this->mConfig, MonsterList::cave_spider);
-        } else if (TypeName == "minecraft:spider") {
-            setAttribute(Mob, this->mConfig, MonsterList::spider);
-        } else if (TypeName == "minecraft:zombie_pigman") {
-            setAttribute(Mob, this->mConfig, MonsterList::zombie_pigman);
-        } else if (TypeName == "minecraft:stray") {
-            setAttribute(Mob, this->mConfig, MonsterList::stray);
-        } else if (TypeName == "minecraft:ender_dragon") {
-            setAttribute(Mob, this->mConfig, MonsterList::ender_dragon);
-        } else if (TypeName == "minecraft:wither") {
-            setAttribute(Mob, this->mConfig, MonsterList::wither);
-        }
-
-
+    evnetBus.emplaceListener<ll::event::SpawnedMobEvent>([](ll::event::SpawnedMobEvent& ev) {
+        // if (ev.mob() == nullptr) return true;
+        if (!ev.mob().has_value()) return true;
+        auto res = ev.mob();
+            switch (ll::hash_utils::doHash(res->getTypeName())) {
+            case ll::hash_utils::doHash("minecraft:blaze"): {
+                setAttribute(res, MonsterList::blaze);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:creeper"): {
+                setAttribute(res, MonsterList::creeper);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:drowned"): {
+                setAttribute(res, MonsterList::drowned);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:enderman"): {
+                setAttribute(res, MonsterList::enderman);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:evoker"): {
+                setAttribute(res, MonsterList::evoker);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:ghast"): {
+                setAttribute(res, MonsterList::ghast);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:guardian"): {
+                setAttribute(res, MonsterList::guardian);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:elder_guardian"): {
+                setAttribute(res, MonsterList::elder_guardian);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:husk"): {
+                setAttribute(res, MonsterList::husk);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:magma_cube"): {
+                setAttribute(res, MonsterList::magma_cube);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:endermite"): {
+                setAttribute(res, MonsterList::endermite);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:hoglin"): {
+                setAttribute(res, MonsterList::hoglin);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:phantom"): {
+                setAttribute(res, MonsterList::phantom);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:piglin_brute"): {
+                setAttribute(res, MonsterList::piglin_brute);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:pillager"): {
+                setAttribute(res, MonsterList::pillager);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:ravager"): {
+                setAttribute(res, MonsterList::ravager);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:shulker"): {
+                setAttribute(res, MonsterList::shulker);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:silverfish"): {
+                setAttribute(res, MonsterList::silverfish);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:skeleton"): {
+                setAttribute(res, MonsterList::skeleton);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:vex"): {
+                setAttribute(res, MonsterList::vex);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:vindicator"): {
+                setAttribute(res, MonsterList::vindicator);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:warden"): {
+                setAttribute(res, MonsterList::warden);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:witch"): {
+                setAttribute(res, MonsterList::witch);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:wither_skeleton"): {
+                setAttribute(res, MonsterList::wither_skeleton);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:zoglin"): {
+                setAttribute(res, MonsterList::zoglin);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:zombie"): {
+                setAttribute(res, MonsterList::zombie);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:zombie_villager_v2"): {
+                setAttribute(res, MonsterList::zombie_villager_v2);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:piglin"): {
+                setAttribute(res, MonsterList::piglin);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:slime"): {
+                setAttribute(res, MonsterList::slime);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:cave_spider"): {
+                setAttribute(res, MonsterList::cave_spider);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:spider"): {
+                setAttribute(res, MonsterList::spider);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:zombie_pigman"): {
+                setAttribute(res, MonsterList::zombie_pigman);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:stray"): {
+                setAttribute(res, MonsterList::stray);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:ender_dragon"): {
+                setAttribute(res, MonsterList::ender_dragon);
+                break;
+            }
+            case ll::hash_utils::doHash("minecraft:wither"): {
+                setAttribute(res, MonsterList::wither);
+                break;
+            }
+            }
         return true;
     });
+    // auto& logger = getSelf().getLogger();
+
     return true;
 }
 
 
 bool Strengthen::disable() {
     getSelf().getLogger().info("disabling...");
-    auto& EventBus = ll::event::EventBus::getInstance();
-
-    EventBus.removeListener(mMobSpawned);
 
     // Code for disabling the plugin goes here.
 

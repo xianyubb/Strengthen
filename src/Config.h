@@ -11,7 +11,6 @@ struct Monster {
     float health               = 0;
     float attack               = 0;
     Speed speed                = {0, 0, 0};
-    float luck                 = 0;
     float follow_range         = 0;
     float jump_strength        = 0;
     float knockback_resistance = 0;
